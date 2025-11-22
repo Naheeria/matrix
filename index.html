@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>아이젠하워 매트릭스</title>
+
+<!-- SortableJS 추가 -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
+<style>
+    body {
+        font-family: "Pretendard", sans-serif;
+        background: #f5f3ee;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #333;
+    }
+
+    h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #444;
+    }
+
+    .matrix-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        width: 90vw;
+        max-width: 900px;
+    }
+
+    .matrix {
+        background: white;
+        border-radius: 18px;
+        padding: 16px;
+        border: 1px solid #ddd;
+        position: relative;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        display: flex;
+        flex-direction: column;
+        min-height: 220px;
+    }
+
+    .matrix-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #333;
+    }
+
+    .q1 { background: #fdeceb; }
+    .q2 { background: #e8f5e9; }
+    .q3 { background: #fff8e1; }
+    .q4 { background: #e3f2fd; }
+
+    .todo {
+        background: rgba(255,255,255,0.65);
+        margin: 6px 0;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: grab;
+    }
+
+    .todo button.delete {
+        background: none;
+        border: none;
+        color: #777;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .add-row {
+        display: flex;
+        gap: 8px;
+        margin-top: auto;
+        padding-top: 10px;
+    }
+
+    .add-row input {
+        flex: 1;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+
+    .add-row button {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 8px;
+        background: #4a6fa5;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .top-controls {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .top-controls button {
+        padding: 10px 16px;
+        border: none;
+        border-radius: 10px;
+        background: #5d7fa3;
+        color: white;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+    @media (max-width: 720px) {
+        .matrix-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+</head>
+<body>
+
+<h1>아이젠하워 매트릭스</h1>
+
+<div class="top-controls">
+    <button onclick="resetAll()">기록 초기화</button>
+    <button onclick="saveImage()">이미지 저장</button>
+</div>
+
+<div class="matrix-container" id="matrixRoot">
+    <div class="matrix q1">
+        <div class="matrix-title">1. 중요 & 긴급</div>
+        <div class="todos"></div>
+        <div class="add-row">
+            <input type="text" placeholder="할 일 입력…" />
+            <button onclick="addTodo(this)">추가</button>
+        </div>
+    </div>
+
+    <div class="matrix q2">
+        <div class="matrix-title">2. 중요 & 비긴급</div>
+        <div class="todos"></div>
+        <div class="add-row">
+            <input type="text" placeholder="할 일 입력…" />
+            <button onclick="addTodo(this)">추가</button>
+        </div>
+    </div>
+
+    <div class="matrix q3">
+        <div class="matrix-title">3. 중요X & 긴급</div>
+        <div class="todos"></div>
+        <div class="add-row">
+            <input type="text" placeholder="할 일 입력…" />
+            <button onclick="addTodo(this)">추가</button>
+        </div>
+    </div>
+
+    <div class="matrix q4">
+        <div class="matrix-title">4. 중요X & 비긴급</div>
+        <div class="todos"></div>
+        <div class="add-row">
+            <input type="text" placeholder="할 일 입력…" />
+            <button onclick="addTodo(this)">추가</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<script>
+/* ------------------ 할 일 추가 ------------------ */
+function addTodo(btn) {
+    const row = btn.parentElement;
+    const input = row.querySelector("input");
+    const text = input.value.trim();
+    if (!text) return;
+
+    const todos = row.parentElement.querySelector(".todos");
+
+    const div = document.createElement("div");
+    div.className = "todo";
+    div.innerHTML = `<span>${text}</span><button class="delete" onclick="this.parentElement.remove()">✕</button>`;
+
+    todos.appendChild(div);
+    input.value = "";
+}
+
+/* enter 로 할 일 추가 */
+document.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+        const active = document.activeElement;
+        if (active && active.tagName === "INPUT") {
+            const btn = active.parentElement.querySelector("button");
+            addTodo(btn);
+        }
+    }
+});
+
+/* ------------------ 전체 초기화 ------------------ */
+function resetAll() {
+    document.querySelectorAll(".todos").forEach(t => t.innerHTML = "");
+}
+
+/* ------------------ 이미지 저장 ------------------ */
+async function saveImage() {
+    const matrix = document.getElementById("matrixRoot");
+
+    const wrapper = document.createElement("div");
+    wrapper.style.padding = "50px";
+    wrapper.style.background = "white";
+    wrapper.style.borderRadius = "20px";
+    wrapper.style.display = "inline-block";
+
+    const clone = matrix.cloneNode(true);
+
+    clone.querySelectorAll(".delete").forEach(x => x.remove());
+    clone.querySelectorAll(".add-row").forEach(r => r.remove());
+
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
+
+    const canvas = await html2canvas(wrapper, { scale: 3 });
+    const link = document.createElement("a");
+    link.download = "matrix.png";
+    link.href = canvas.toDataURL();
+    link.click();
+
+    wrapper.remove();
+}
+
+/* ------------------ SortableJS : 드래그 이동 ------------------ */
+document.querySelectorAll(".todos").forEach(t => {
+    new Sortable(t, {
+        group: {
+            name: "matrix-group",
+            pull: true,   // 다른 칸으로 끌어가기 허용
+            put: true     // 다른 칸이 받아들이기 허용
+        },
+        animation: 150,
+        ghostClass: "dragging"
+    });
+});
+</script>
+
+</body>
+</html>
