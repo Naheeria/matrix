@@ -211,27 +211,48 @@ function resetAll() {
 /* ------------------ 이미지 저장 ------------------ */
 async function saveImage() {
     const matrix = document.getElementById("matrixRoot");
-
+    const originalStyle = matrix.style.cssText; // 원래 스타일 저장
     const wrapper = document.createElement("div");
+
+    // 1. 이미지 저장을 위한 Wrapper 설정 (여백 및 배경)
     wrapper.style.padding = "50px";
     wrapper.style.background = "white";
     wrapper.style.borderRadius = "20px";
     wrapper.style.display = "inline-block";
 
+    // 2. 매트릭스 클론 생성
     const clone = matrix.cloneNode(true);
 
+    // 3. ✨ [핵심 수정 부분] 클론에 2x2 배열 스타일 강제 적용 ✨
+    clone.style.cssText = `
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        width: 900px; /* 고정된 웹 너비 */
+        max-width: 900px;
+    `;
+    
+    // 4. 모바일 1x4 배열 시 자동으로 생성되는 미디어 쿼리 기반 스타일 제거
+    // (CSS 미디어 쿼리가 적용되지 않도록 width를 강제로 설정)
+    clone.style.width = '900px'; 
+    
+    // 5. 불필요한 요소 제거 (이미지 클린업)
     clone.querySelectorAll(".delete").forEach(x => x.remove());
     clone.querySelectorAll(".add-row").forEach(r => r.remove());
 
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
 
+    // 6. html2canvas로 캔버스 생성
     const canvas = await html2canvas(wrapper, { scale: 3 });
+    
+    // 7. 이미지 다운로드
     const link = document.createElement("a");
     link.download = "matrix.png";
     link.href = canvas.toDataURL();
     link.click();
 
+    // 8. Wrapper 제거 및 복원
     wrapper.remove();
 }
 
